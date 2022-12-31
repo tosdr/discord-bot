@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { MenuPaginationBuilder } = require("spud.js");
-const { buildStatusEmbed } = require('../util/functions.js');
+const { buildStatusEmbed, getGroups } = require('../util/functions.js');
 const Fetch = require('node-fetch-commonjs');
 const log = require('npmlog');
 
@@ -12,18 +12,23 @@ module.exports = {
 		const response = await Fetch('https://status.tosdr.org/api/v2/summary.json', {method: 'GET'})
 		.then(res => res.json())
 		.catch(err => log.error(err));
+		const groups = getGroups(response);
 		let embeds = [],
 			index = 1;
-		response.components.forEach(component => { if (!component.group) {
-			// Menu item limit is 25
-			if (index < 25) embeds.push({
-				embed: buildStatusEmbed(component, index, response.components.length),
-				label: component.name,
-				sort: component.group_id
-			});
-			console.log(component.group_id)
-			index++;
-		}})
+		groups.forEach(group => {
+			embeds.push({
+				embed: buildStatusEmbed(group.status, index, response.components.length),
+				label: `=== ${group.name} ===`,
+			})
+			index += 1;
+			group.components.forEach(component => {
+				embeds.push({
+					embed: buildStatusEmbed(component, index, response.components.length),
+					label: component.name,
+				})
+				index += 1;
+			})
+		});
 
 		const pagination = new MenuPaginationBuilder(interaction)
 			.setOptions(embeds)

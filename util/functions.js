@@ -3,7 +3,8 @@ const { EmbedBuilder } = require('discord.js');
 module.exports = {
 	buildStatusEmbed,
 	buildServiceEmbed,
-	getRegionFlag
+	getRegionFlag,
+	getGroups
 }
 
 function getStatusString(status_string) {
@@ -66,4 +67,48 @@ function getRegionFlag(regionCode) {
 		case 'eu-west':
 			return '🇬🇧';
 	}
+}
+
+function groupExists(groupId, existingGroups) {
+	let index = 0;
+	let response;
+	for (const group of existingGroups) {
+		if (group.id == groupId) {response = {"exists":true,"index":index};}
+		index += 1;
+	}
+	if (response != undefined) return response;
+	return {"exists":false,"index":-1};
+}
+
+function getGroups(response) {
+	const components = response.components;
+	let responseGroups = [],
+		groups = [];
+
+	for (const component of components) {
+		if (!component.group) {
+			let group = groupExists(component.group_id, groups);
+			if (group.exists) {
+				groups[group.index].components.push(component);
+			} else {
+				groups.push({
+					"id": component.group_id,
+					"name": null,
+					"components": [component],
+					"status": null
+				});
+			}
+		} else responseGroups.push(component);
+	}
+	
+	groups.forEach(group => {
+		responseGroups.forEach(responseGroup => {
+			if (group.id == responseGroup.id) {
+				group.name = responseGroup.name;
+				group.status = responseGroup;
+			}
+		});
+	});
+
+	return groups;
 }
