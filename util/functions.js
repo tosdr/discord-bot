@@ -24,10 +24,10 @@ function getStatusString(status_string) {
 	};
 }
 
-function buildServiceEmbed(service, embed_color, index) {
+function buildServiceEmbed(service, embed_color, index, serviceCount) {
 	return new EmbedBuilder()
 		.setColor(embed_color)
-		.setFooter({text:`Result ${index}/${services.length}`})
+		.setFooter({text:`Result ${index}/${serviceCount}`})
 		.setImage(service.links.crisp.badge.png)
 		.setThumbnail(`https://s3.tosdr.org/logos/${service.id}.png`)
 		.setTitle(service.name)
