@@ -17,16 +17,16 @@ module.exports = {
 		const query = interaction.options.getString('query');
 		const response = await fetch(`https://api.tosdr.org/search/v4/?query=${query}`, {method: 'GET'})
 			.then(res => res.json())
-			.catch(err => log.error('error:' + err));
+			.catch(err => log.error('fetch error:' + err));
 		const services = response.parameters.services;
 		if (services.length == 0) return interaction.reply("No results!");
-		
+
 		const pagination = new Pagination(interaction);
 		let embeds = [], index = 1;
-		services.forEach(service => {
-			embeds.push(buildServiceEmbed(service));
+		for(const service of services) {
+			embeds.push(buildServiceEmbed(service, embedColor, index, services.length));
 			index++;
-		});
+		}
 
 		pagination.setEmbeds(embeds);
 		pagination.render(); // Render and send embed(s)
