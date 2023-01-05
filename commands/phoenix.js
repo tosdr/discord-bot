@@ -49,7 +49,7 @@ module.exports = {
 					method: 'DELETE',
 					headers: {apiKey: tosdrApiKey}
 				};
-				const response = await fetch(`https://api.tosdr.org/spam/v1/?user=${user_id}&dryrun=true`, options)
+				const response = await fetch(`https://api.tosdr.org/spam/v1/?user=${user_id}`, options)
 					.then(res => res.json())
 					.catch(err => {
 						log.error('error:' + err)
