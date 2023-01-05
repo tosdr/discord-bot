@@ -26,8 +26,8 @@ client.once(Events.ClientReady, () => {
 client.on(Events.InteractionCreate, async interaction => {
 	if (interaction.isButton()) {
 		if (interaction.customId.startsWith('phoenixPurgeConfirm-')) {
-			const command = client.commands.get('phoenixpurge');
-			command.execute(interaction, true);
+			const command = client.commands.get('phoenix');
+			command.execute(interaction, true, interaction.customId.replace('phoenixPurgeConfirm-', ''), 0);
 		}
 	}
 	if (!interaction.isChatInputCommand()) return;
