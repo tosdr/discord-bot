@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits } from "discord.js";
+import { Client, GatewayIntentBits, ActivityType } from "discord.js";
 import "dotenv/config";
 import logger from "./utils/logger";
 import ready from "./listeners/ready";
@@ -11,6 +11,13 @@ const client = new Client({
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent
   ],
+  presence: {
+    activities: [{
+      name: "Reading the TOS",
+      type: ActivityType.Custom
+    }],
+    status: 'online'
+  }
 });
 
 // Register listeners

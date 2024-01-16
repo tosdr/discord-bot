@@ -10,17 +10,6 @@ export default (client: Client): void => {
 
     await client.application.commands.set(Commands);
     logger.info(`Registered ${Commands.length} application commands`);
-
-    client.user.setPresence({
-      activities: [
-        {
-          name: "Reading the TOS",
-          type: ActivityType.Custom,
-        },
-      ],
-      status: "online",
-    });
-
     logger.info(`Logged in as ${client.user.username}`);
   });
 };
