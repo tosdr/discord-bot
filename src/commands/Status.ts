@@ -11,19 +11,14 @@ export const Status: Command = {
   run: async (client: Client, interaction: ChatInputCommandInteraction) => {
     axios.request({
       method: 'GET',
-      url: 'https://status.tosdr.org/api/v2/summary.json'
+      url: 'https://betteruptime.com/api/v2/status-pages/202557/resources',
+      headers: {
+        'Authorization': `Bearer ${process.env.STATUS_API_KEY}`
+      }
     }).then((res) => {
-      const groups = getGroups(res.data);
-      let embeds: EmbedBuilder[] = [],
-        index = 1;
-      groups.forEach(group => {
-        embeds.push(buildGroupStatusEmbed(group, index, groups.length))
-        index++;
-      });
+      let embed = buildStatusEmbed(res.data.data);
 
-      const pagination = new Pagination(interaction);
-      pagination.setEmbeds(embeds);
-      return pagination.render();
+      return interaction.editReply({ embeds: [embed] })
     }).catch((err) => {
       logger.error(err)
       const error_embed = new EmbedBuilder()
@@ -38,65 +33,19 @@ export const Status: Command = {
 function getStatusEmoji(status_string: string) {
   switch (status_string) {
     case "operational": return "<:27AE60:1190014048230707200>"; break;
-    case "under_maintainance": return "<:00AAF0:1190014044992720956>"; break;
-    case "degraded_performance":
-    case "partial_outage": return "<:FFA837:1190014041096192171>"; break;
-    case "major_outage": return "<:C44031:1190014043633758442>"; break;
+    case "maintainance": return "<:00AAF0:1190014044992720956>"; break;
+    case "degraded": return "<:FFA837:1190014041096192171>"; break;
+    case "downtime": return "<:C44031:1190014043633758442>"; break;
     default: return "<:9C9C9C:1190014049866490056>"; break;
   }
 }
 
-function groupExists(groupId: string, existingGroups: any) {
-  let index = 0;
-  let response;
-  for (const group of existingGroups) {
-    if (group.id == groupId) { response = { "exists": true, "index": index }; }
-    index += 1;
-  }
-  if (response != undefined) return response;
-  return { "exists": false, "index": -1 };
-}
-
-function getGroups(response: any) {
-  const components = response.components;
-  let responseGroups: any[] = [],
-    groups = [];
-
-  for (const component of components) {
-    if (!component.group) {
-      let group = groupExists(component.group_id, groups);
-      if (group.exists) {
-        groups[group.index].components.push(component);
-      } else {
-        groups.push({
-          "id": component.group_id,
-          "name": null,
-          "components": [component],
-          "status": null
-        });
-      }
-    } else responseGroups.push(component);
-  }
-
-  groups.forEach(group => {
-    responseGroups.forEach(responseGroup => {
-      if (group.id == responseGroup.id) {
-        group.name = responseGroup.name;
-        group.status = responseGroup;
-      }
-    });
-  });
-
-  return groups;
-}
-
-function buildGroupStatusEmbed(group: any, index: number, total: number) {
+function buildStatusEmbed(resources: any) {
   let content = "";
-  group.components.forEach((component: any) => {
-    content += `${getStatusEmoji(component.status)} ${component.name}\n`
+  resources.forEach((resource: any) => {
+    content += `${getStatusEmoji(resource.attributes.status)} ${resource.attributes.public_name}\n`
   })
   return new EmbedBuilder()
-    .setTitle(`${group.name} Status`)
+    .setTitle(`ToS;DR Status`)
     .setDescription(content)
-    .setFooter({ text: `Page ${index}/${total}` });
 }
